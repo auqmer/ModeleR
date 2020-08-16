@@ -1,0 +1,82 @@
+---
+title: "Simple Regression"
+subtitle: "Simulation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NULL)
+library(arm)
+```
+
+Let's suppose we know the average height in the population of men is 69.1 with a standard deviation of 2.9, and further suppose we know the average height of women is 63.7 with a standard deviation of 2.7. 
+
+```{r}
+mu_m <- 69.1
+sigma_m <- 2.9
+mu_w <- 63.7
+sigma_w <- 2.7
+nobs <- 1000
+```
+
+```{r}
+set.seed(1234)
+men_sample <- rnorm(n = nobs/2, mean = mu_m, sd = sigma_m)
+women_sample <- rnorm(n = nobs/2, mean = mu_w, sd = sigma_w)
+
+ht <- c(men_sample, women_sample)
+women <- rep(0:1, each = nobs/2)
+```
+
+```{r}
+hist(men_sample, breaks = "fd", probability = TRUE)
+curve(dnorm(x, mean = mean(men_sample), sd = sd(men_sample)), add = TRUE,
+      lwd = 2)
+```
+
+```{r}
+hist(ht, breaks = "fd", probability = TRUE, 
+     ylim = c(0, .2))
+curve(dnorm(x, mean(c(ht)), sd(ht)), add = TRUE, lwd = 2)
+```
+
+```{r}
+hist(men_sample, col = "skyblue", probability = TRUE, breaks = "fd",
+     ylim = c(0, .2), xlim = c(min(ht-2), max(ht+2)))
+hist(women_sample, add = TRUE, col = "pink", probability = TRUE, 
+     breaks = "fd")
+curve(dnorm(x, mean(men_sample), sd(men_sample)), add = TRUE, col = "blue", 
+      lwd = 2)
+curve(dnorm(x, mean(women_sample), sd(women_sample)), add = TRUE, col = "red", lwd = 2)
+```
+
+```{r}
+mod <- lm(ht ~ women)
+display(mod)
+```
+
+```{r}
+dat <- data.frame(
+  ht,
+  women,
+  resid = resid(mod),
+  epsilon = c(men_sample - mu_m, women_sample - mu_w)
+)
+```
+
+```{r}
+height <- read.table("https://raw.githubusercontent.com/avehtari/ROS-Examples/master/PearsonLee/data/Heights.txt", header = TRUE)
+```
+
+
+```{r}
+plot(jitter(daughter_height) ~ jitter(mother_height, ), data = height)
+```
+
+
+```{r}
+ctr <- function(x) scale(x, scale = FALSE)
+mod <- lm(daughter_height ~ ctr(mother_height), data = height)
+display(mod, digits = 1)
+```
+

@@ -1,0 +1,33 @@
+---
+title: "Simple Regression"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE, comment = NULL)
+library(car)
+library(arm)
+```
+
+```{r}
+learn <- read.csv("data/learn.csv", header = TRUE)
+```
+
+
+```{r}
+print(learn, row.names = FALSE)
+```
+
+```{r}
+mod <- lm(Y ~ X, data = learn)
+display(mod)
+anova(mod)
+```
+
+
+```{r}
+plot(Y ~ X, learn)
+abline(coef(mod))
+```
+
