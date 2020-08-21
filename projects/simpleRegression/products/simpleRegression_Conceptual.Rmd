@@ -8,15 +8,123 @@ library(knitr)
 opts_chunk$set(echo = TRUE, comment = NULL)
 library(car)
 library(arm)
+options(digits = 2)
 ```
 
+This tutorial is based on chapter 2 of Pedhazur (1997), which discusses simple linear regression and correlation.
+Here, I will present the conceptual formulas as in the chapter, but will not use the calculation formulas, as we will be using R to do the calculations.
+
+## Variance and Covariance
+
+The concept of variability is central to understanding statistics in general an linear models specifically. 
+The variance and standard deviation are the two most common measures of variability.
+Researchers often also want to know how the variability of one variable is related to variability in the other. 
+For this, the covariance and correlation are often used. 
+These concepts are foundational to understanding simple linear regression.
+
+### Variance
+
+The variance of a variable is the average squared deviation of the individual scores from the mean score.
+It is a measure of dispersion, which give us a sense of how far the values in a population tend to fall from the mean value.
+The larger the variance, the wider the range of values in the distribution.
+For example, suppose we knew the average height of adult women in the United States is 64 inches, with a variance of 9 inches.
+As we will see below, the standard deviation is the square root of the variance, so the standard deviation for the height of adult women is $\sqrt{9} = 3$.
+
+To illustrate the calculations below, we will randomly sample from the above described population, with the assumption that the height of women is normally distributed, which is a reasonable assumption.
+To help build our intuitions about these conceptual formulas, we will keep the sample small for now.
+
+Let's randomly sample 10 women from our population.
+To do this in R we need three values the sample size (n), the mean, and the standard deviation (sd).
+Then we can use the `rnorm()` function to create a vector of heights as:
+```{r}
+set.seed(1234)
+height_women <- rnorm(n = 10, mean = 64, sd = 3)
+```
+
+I used `set.seed(1234)` to make this example reproducible.
+See `?set.seed` for more information.
+
+If, for the vector $X$  we define another vector of deviation scores, $x$, as the difference between each value in $X$ and the mean of $X$, $\bar{X}$ as $x = X - \bar{X}$, then:
+
+$$
+s_x^2 = \frac{\Sigma{(X - \bar{X})^2}}{N - 1} = \frac{x^2}{N- 1} \tag{2.1}
+$$
+Let's use R to calculate the variance of our `height_women` variable
+
+```{r}
+X <- height_women
+N <- length(X)
+```
+
+First, I created a variable `X` which is just a copy of `height_women`, then I created a scalar `N` which is the number of women in our sample, which is `r N`.
+
+We will use the deviation score to calculate the variance, so I create it here:
+```{r}
+# Calculate deviation scores.
+x <- X - mean(X) 
+```
+
+Finally, we calculate the variance and assign it to the symbol `sx2`
+```{r}
+# Calculate variance using deviation scores with equation (2.1)
+sx2 <- sum(x^2)/(N - 1)
+
+# Print variance
+sx2
+```
+
+The sample variance `r round(sx2,1)` is very close to the population variance of women's height which we said was 9.
+We can think of the variance as the average squared deviation of the sample scores from their mean.
+
+We did these "hand" calculations to demonstrate the concepts underlying the variance. 
+We can calculate it much easier with the `var()` function:
+
+```{r}
+var(X)
+```
+
+The standard deviation is the square root of the variance, so we can calculate it is various ways as follows.
+
+```{r}
+sx <- sqrt((sum(x^2))/(N-1)) # by 'hand'
+sx
+
+sd(X) # built-in R function
+```
+
+### Covariance
+
+The formula for covariance is similar to that of the variance.
+
+$$
+s_{xy} = \frac{\Sigma{(X - \bar{X})(Y - \bar{Y})}}{N - 1} = \frac{\Sigma{xy}}{N - 1} \tag{2.3}
+$$
+```{r}
+
+```
+
+
+## Simple Linear Regression
+
+### A Numerical Example
 ```{r}
 learn <- read.csv("data/learn.csv", header = TRUE)
 ```
 
-
 ```{r}
 print(learn, row.names = FALSE)
+```
+
+```{r}
+# Create vectors from the data frame.
+X <- learn$X
+Y <- learn$Y
+
+N <- length(X)
+
+# Create deviation scores
+x <- X - mean(X)
+y <- Y - mean(Y)
 ```
 
 ```{r}
@@ -24,7 +132,6 @@ mod <- lm(Y ~ X, data = learn)
 display(mod)
 anova(mod)
 ```
-
 
 ```{r}
 plot(Y ~ X, learn)
