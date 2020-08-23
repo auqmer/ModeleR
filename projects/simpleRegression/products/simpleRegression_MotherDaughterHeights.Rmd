@@ -1,0 +1,29 @@
+---
+title: "Simple Regression"
+subtitle: "Mother Daughter Heights"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r}
+heights <- read.csv("data/heights.csv", header = TRUE)
+```
+
+```{r}
+describe(heights)
+```
+
+
+```{r}
+mod <- lm(daughter_height ~ I(mother_height - mean(mother_height)), heights)
+display(mod)
+```
+
+
+

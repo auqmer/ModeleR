@@ -8,11 +8,30 @@ library(knitr)
 opts_chunk$set(echo = TRUE, comment = NULL)
 library(car)
 library(arm)
-options(digits = 2)
+options(digits = 3)
 ```
 
 This tutorial is based on chapter 2 of Pedhazur (1997), which discusses simple linear regression and correlation.
 Here, I will present the conceptual formulas as in the chapter, but will not use the calculation formulas, as we will be using R to do the calculations.
+
+We will use the data set in that chapter to illustrate the concepts and calculations.
+Let's load that data into R.
+Looking on page 16 of Pedhazur (1997) we see a table with several colums.
+We are interested in the `X` and `Y` columns, and want to enter them into a data frame that we will call `learn`.
+I will use the `rep` function that repeats numbers to take advantage of the pattern in `X`, then just manually enter the `Y` variable.
+
+```{r}
+learn <- data.frame(
+  X = rep(1:5, each = 4),
+  Y = c(3,5,6,9,4,6,7,10,4,6,8,10,5,7,9,12,7,10,12,6)
+)
+
+# Check data against Table 2.1 sums and means for the two columns.
+colSums(learn)
+colMeans(learn)
+```
+
+These data are created to represent a learning experiment and `X` represents the number of hours studied, and `Y` represents achievement in mathematics (see the chapter for more information).
 
 ## Variance and Covariance
 
@@ -20,43 +39,28 @@ The concept of variability is central to understanding statistics in general an 
 The variance and standard deviation are the two most common measures of variability.
 Researchers often also want to know how the variability of one variable is related to variability in the other. 
 For this, the covariance and correlation are often used. 
-These concepts are foundational to understanding simple linear regression.
+These concepts are fundamental to understanding simple linear regression.
 
 ### Variance
 
 The variance of a variable is the average squared deviation of the individual scores from the mean score.
 It is a measure of dispersion, which give us a sense of how far the values in a population tend to fall from the mean value.
 The larger the variance, the wider the range of values in the distribution.
-For example, suppose we knew the average height of adult women in the United States is 64 inches, with a variance of 9 inches.
-As we will see below, the standard deviation is the square root of the variance, so the standard deviation for the height of adult women is $\sqrt{9} = 3$.
-
-To illustrate the calculations below, we will randomly sample from the above described population, with the assumption that the height of women is normally distributed, which is a reasonable assumption.
-To help build our intuitions about these conceptual formulas, we will keep the sample small for now.
-
-Let's randomly sample 10 women from our population.
-To do this in R we need three values the sample size (n), the mean, and the standard deviation (sd).
-Then we can use the `rnorm()` function to create a vector of heights as:
-```{r}
-set.seed(1234)
-height_women <- rnorm(n = 10, mean = 64, sd = 3)
-```
-
-I used `set.seed(1234)` to make this example reproducible.
-See `?set.seed` for more information.
 
 If, for the vector $X$  we define another vector of deviation scores, $x$, as the difference between each value in $X$ and the mean of $X$, $\bar{X}$ as $x = X - \bar{X}$, then:
 
 $$
 s_x^2 = \frac{\Sigma{(X - \bar{X})^2}}{N - 1} = \frac{x^2}{N- 1} \tag{2.1}
 $$
-Let's use R to calculate the variance of our `height_women` variable
+Let's use R to calculate the variance of our `X` variable
 
 ```{r}
-X <- height_women
+X <- learn$X
 N <- length(X)
 ```
 
-First, I created a variable `X` which is just a copy of `height_women`, then I created a scalar `N` which is the number of women in our sample, which is `r N`.
+First, I created a variable `X` which is just a copy of `X` in `learn` and is the number of hours studied.
+Then I created a scalar `N` which is the sample size in our example, which is `r N`.
 
 We will use the deviation score to calculate the variance, so I create it here:
 ```{r}
@@ -73,7 +77,6 @@ sx2 <- sum(x^2)/(N - 1)
 sx2
 ```
 
-The sample variance `r round(sx2,1)` is very close to the population variance of women's height which we said was 9.
 We can think of the variance as the average squared deviation of the sample scores from their mean.
 
 We did these "hand" calculations to demonstrate the concepts underlying the variance. 
@@ -100,7 +103,26 @@ $$
 s_{xy} = \frac{\Sigma{(X - \bar{X})(Y - \bar{Y})}}{N - 1} = \frac{\Sigma{xy}}{N - 1} \tag{2.3}
 $$
 ```{r}
+Y <- learn$Y
+y <- Y - mean(Y)
 
+sxy <- sum(x*y)/(N -1)
+sxy
+```
+
+The last part of the chapter discusses the correlation model.
+I give the formula for the correlation, followed by the R code hand calculation and built-in function.
+Notice that I use $N-1$ instead of $N$ with the sample estimates of the standard deviations, which is the formula we use in practice (we don't know the population values, and so must estimate them from the sample).
+
+$$
+\rho = \frac{\Sigma{xy}}{(N-1)s_x s_y}
+$$
+```{r}
+sum(x*y)/((N-1)*sd(X)*sd(Y))
+```
+
+```{r}
+cor(X, Y)
 ```
 
 
@@ -130,7 +152,23 @@ y <- Y - mean(Y)
 ```{r}
 mod <- lm(Y ~ X, data = learn)
 display(mod)
-anova(mod)
+learn$yhat <- predict(mod)
+
+learn$yhatDevs <- learn$yhat - mean(learn$Y)
+
+learn$sqrDevs <- learn$yhatDevs^2
+
+learn$resids <- resid(mod)
+
+learn$sqrResids <- (resid(mod))^2
+```
+
+```{r}
+round(learn, 3)
+```
+
+```{r}
+round(colSums(learn),3)
 ```
 
 ```{r}
