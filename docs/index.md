@@ -22,6 +22,6 @@ Introduction to Modeling and Model Comparison
 
 ### Linear Models
 
-* [Siimple Regression]
+* [Siimple Regression - Pedhazur Chapter 2](https://auqmer.github.io/ModeleR/simpleRegression_Conceptual.html)
 
 ### Generalized Linear Models

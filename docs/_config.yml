@@ -1,5 +1,5 @@
-title: ExperimenteR
+title: ModeleR
 logo: qlogo.png
-description: QMER experimental design and analysis in R.
+description: QMER page for Linear Models in R.
 show_downloads: false
 theme: jekyll-theme-minimal

@@ -19,6 +19,7 @@ I will use the following R packages in this tutorial:
 library(car)
 library(arm)
 library(psych)
+library(ggplot2)
 ```
 
 We will use the data set in that chapter to illustrate the concepts and calculations.
@@ -143,7 +144,6 @@ Often, in such a factorial design the IV would be considered a categorical varia
 This makes sense because study time is on a ratio scale of measurement.
 But we are making the assumption that the effect of time is linear. 
 
-
 ### A Numerical Example
 
 In the first section of this tutorial we entered the data into R manually. 
@@ -182,7 +182,7 @@ describe(learn, fast = TRUE)
 To model the relation between X and Y we will use a simple linear model, that can be represented as follows:
 
 $$
-Y_i = \alpha + \beta X_i + \varepsilon_i
+Y_i = \alpha + \beta X_i + \varepsilon_i \tag{2.5}
 $$
 See the chapter for details about this equation.
 Note that the $i$ subscript indicates components of the equation that are unique to individual, so each person in the population has a math score and a number of hours studied.
@@ -190,45 +190,82 @@ Each individual also has a unique error ($\varepsilon_i$).
 We say that the $i$ subscript indexes individuals in the population.
 However the intercept ($\alpha$) and slope ($\beta$) are scalars, meaning single values. 
 
+This equation (and the sample equation that follows) decompose the variability in the outcome $Y_i$ into two components, a systematic component, represented by $\alpha + \beta X_i$, and an stochastic or error component, represented by $\varepsilon_i$. 
+The error components is also referred to as the model residuals, as they represent the variability in individual scores not explained by the model. 
+
 The sample equation is:
 
 $$
-Y_i = a + bX_i + e_i
+Y_i = a + bX_i + e_i \tag{2.6}
 $$
 
 and now the $i$ subscript indexes individuals in the sample instead of the population.
 
+#### Running simple regressions in R
+
 Next, let's run a simple regression.
 We use the `lm()` function, with the first argument being a formula.
-In R formulas take the form of 
+In R formulas take the form of an outcome (here `Y`) as a function of (represented with the binary operator `~`) the model (here just `X` though this part will become more complex as our models become more complex).
+Type `?formula` in the R console for more information about formulas in R.
+
 ```{r}
 mod <- lm(Y ~ X, data = learn)
 display(mod)
 ```
 
+#### Predicted scores
 
+Make sure you can match the coefficients in the above output to the equation at the bottom of page 19.
+I repeat that equation here (but using $\hat{Y}$ instead of $Y'$)
+
+$$
+\hat{Y} = 5.05 + 0.75 X
+$$
+
+We can contrast this with the equation 2.6:
+
+$$
+Y_i = a + bX_i + e_i \tag{2.6, repeated}
+$$
+Note that the difference between these two equations is, first, that the outcome of the predicted score equation is the predicted score, $\hat{Y}$, and not $Y$ itself, as in equation 2.6. 
+Second, note that equation 2.6 includes the error term (i.e. residual) 
+
+
+
+The Pedhazur text uses $Y'$, pronounced Y prime, as the symbol for predicted scores, but it is more common to use $\hat{Y}$, pronounced y hat.
 ```{r}
-learn$yhat <- predict(mod)
-
-learn$yhatDevs <- learn$yhat - mean(learn$Y)
-
+# Predicted scores
+learn$yhat <- predict(mod) 
+# Deviations of predicted scores from the sample mean of Y.
+learn$yhatDevs <- learn$yhat - mean(learn$Y) 
+# Squared deviations of predicted scores from the sample mean of Y.
 learn$sqrDevs <- learn$yhatDevs^2
-
+# Residual (Y - Yhat)
 learn$resids <- resid(mod)
-
+# Squared residuals
 learn$sqrResids <- (resid(mod))^2
 ```
+
+#### Table 2.2 Regression Analysis of a Learning Experiment
 
 ```{r}
 round(learn, 3)
 ```
 
+##### Row of sums at the bottom of Table 2.2 in Pedhazur (1997)
 ```{r}
 round(colSums(learn),3)
 ```
 
+##### Plot of data with Regression line
 ```{r}
-plot(Y ~ X, learn)
-abline(coef(mod))
+ggplot(learn, aes(x = X, y = Y)) + geom_point() + geom_smooth(method = "lm",
+                                                              level = .89)
 ```
 
+We can look at the uncertainty intervals (confidence intervals) of the coefficients.
+```{r}
+confint(mod)
+```
+
+The inerval for X is very wide, with some values being negative, suggesting substantial uncertainty in the slope.
