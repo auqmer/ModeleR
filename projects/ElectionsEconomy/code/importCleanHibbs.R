@@ -16,3 +16,5 @@ hibbs <- transform(hibbs,
 
 # Save archival version of cleaned data.
 # write.csv(hibbs, file = "data/hibbs.csv")
+
+rm(loc)

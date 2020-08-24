@@ -13,8 +13,6 @@ library(emmeans)
 library(psych)
 library(arm)
 
-
-
 # import cleaned data -----------------------------------------------------
 source("code/importCleanHibbs.R")
 
@@ -34,7 +32,6 @@ mod <- lm(vote ~ growth, data = hibbs)
 display(mod)
 
 # simulate model ----------------------------------------------------------
-
 simHibbs <- function(model) {
   a <- coef(model)[1]
   b <- coef(model)[2]
@@ -104,6 +101,3 @@ polygon(c(min(x),x,max(x)), c(0,dnorm(x,mu,sigma),0),
   col="darkgray", border="black")
 axis(1, seq(40,65,5), paste(seq(40,65,5),"%",sep=""))
 text(50.7, .025, "Predicted\n74% chance\nof Clinton victory", adj=0)
-
-
-

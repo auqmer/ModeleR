@@ -1,0 +1,80 @@
+---
+title: "Simple Regression"
+subtitle: "Elections and the Economy"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment=NULL)
+```
+
+In this tutorial I will use the following R packages:
+
+```{r, warning=FALSE, message=FALSE}
+library(car)
+library(arm)
+library(psych)
+```
+
+This example is taken from Gelman, Hill, and Vehtari (2021), which is taken from the bread and peace model by Douglas Hibbs.
+This model is based on two factors that dominate the election of U.S. presidents post World War II.
+These two factors are weighted-average growth per capita disposable income over the prior term, and the number of U.S. fatalities resulting from unprovoked deployment.
+This example will focus on the first factor.
+
+```{r}
+source("code/importCleanHibbs.R")
+```
+
+
+```{r}
+scatterHist(hibbs[2:3], xlim = c(-5, 8), ylim = c(35, 70), smooth = FALSE)
+```
+
+
+```{r}
+describe(hibbs[2:3], fast = TRUE)
+```
+
+
+```{r}
+source("code/breadPeaceModelPlot.R")
+```
+
+
+```{r}
+mod <- lm(vote ~ growth, data = hibbs)
+display(mod)
+```
+
+
+```{r}
+# simulate model ----------------------------------------------------------
+simHibbs <- function(model) {
+  a <- coef(model)[1]
+  b <- coef(model)[2]
+  x <- model$model[[2]]
+  n <- length(x)
+  sigma <- summary(mod)$sigma
+  simvote <- a + b*x + rnorm(n, 0, sigma)
+  simmod <- lm(simvote ~ x)
+  return(c(a = coef(simmod)[1], b = coef(simmod)[2], sigma = summary(simmod)$sigma))
+  }
+
+sims <- replicate(10000, simHibbs(mod))
+sims <- t(sims)
+head(sim)
+```
+
+
+```{r}
+plot(vote ~ growth, data = hibbs, xlim = c(-2, 6), ylim = c(40, 70), type = "n")
+#idx <- sample(1:nrow(sims), 100)
+for(i in 1:nrow(sims)) {
+  abline(a = sims[i, 1], b = sims[i, 2], col = "grey")
+}
+points(x = hibbs$growth, y = hibbs$vote)
+abline(coef(mod), col = "black")
+abline(h = 50, lty = 2, col = "darkblue")
+```
+
+
