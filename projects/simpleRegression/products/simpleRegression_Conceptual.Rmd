@@ -3,6 +3,8 @@ title: "Simple Regression"
 output: html_document
 ---
 
+[ModeleR Home](https://auqmer.github.io/ModeleR/)
+
 ```{r setup, include=FALSE}
 library(knitr)
 opts_chunk$set(echo = TRUE, comment = NULL)
@@ -33,7 +35,10 @@ learn <- data.frame(
   X = rep(1:5, each = 4),
   Y = c(3,5,6,9,4,6,7,10,4,6,8,10,5,7,9,12,7,10,12,6)
 )
+learn
+```
 
+```{r}
 # Check data against Table 2.1 sums and means for the two columns.
 colSums(learn)
 colMeans(learn)
@@ -132,7 +137,6 @@ sum(x*y)/((N-1)*sd(X)*sd(Y))
 ```{r}
 cor(X, Y)
 ```
-
 
 ## Simple Linear Regression
 
@@ -259,8 +263,8 @@ round(colSums(learn),3)
 
 ##### Plot of data with Regression line
 ```{r}
-ggplot(learn, aes(x = X, y = Y)) + geom_point() + geom_smooth(method = "lm",
-                                                              level = .89)
+ggplot(learn, aes(x = X, y = Y)) + geom_point() + 
+  geom_smooth(method = "lm", level = .89)
 ```
 
 We can look at the uncertainty intervals (confidence intervals) of the coefficients.
