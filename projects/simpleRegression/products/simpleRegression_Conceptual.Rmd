@@ -6,13 +6,20 @@ output: html_document
 ```{r setup, include=FALSE}
 library(knitr)
 opts_chunk$set(echo = TRUE, comment = NULL)
-library(car)
-library(arm)
+
 options(digits = 3)
 ```
 
 This tutorial is based on chapter 2 of Pedhazur (1997), which discusses simple linear regression and correlation.
 Here, I will present the conceptual formulas as in the chapter, but will not use the calculation formulas, as we will be using R to do the calculations.
+
+I will use the following R packages in this tutorial:
+
+```{r, message=FALSE, warning=FALSE}
+library(car)
+library(arm)
+library(psych)
+```
 
 We will use the data set in that chapter to illustrate the concepts and calculations.
 Let's load that data into R.
@@ -50,7 +57,7 @@ The larger the variance, the wider the range of values in the distribution.
 If, for the vector $X$  we define another vector of deviation scores, $x$, as the difference between each value in $X$ and the mean of $X$, $\bar{X}$ as $x = X - \bar{X}$, then:
 
 $$
-s_x^2 = \frac{\Sigma{(X - \bar{X})^2}}{N - 1} = \frac{x^2}{N- 1} \tag{2.1}
+s_x^2 = \frac{\Sigma{(X - \bar{X})^2}}{N - 1} = \frac{\Sigma{x^2}}{N- 1} \tag{2.1}
 $$
 Let's use R to calculate the variance of our `X` variable
 
@@ -128,30 +135,79 @@ cor(X, Y)
 
 ## Simple Linear Regression
 
+One way to study the covariation of two variables is with simple regression. 
+This methods is best used in an experimental setting where the independent variable (IV) is manipulated and the effect of this manipulation on the dependent variable (DV) is evaluated. 
+The simplest design is a completely randomized design (CRD) with one factor. 
+In relation to the learning experiment in the chapter, this would entail randomly assigning students to one of the five levels of the IV, study time. Then, the covariation of study time with math achievement (DV) would be studied. 
+Often, in such a factorial design the IV would be considered a categorical variable, but in this case, because hours of study time can be thought of as a continuous variable, we will treat it as a continuous variable. 
+This makes sense because study time is on a ratio scale of measurement.
+But we are making the assumption that the effect of time is linear. 
+
+
 ### A Numerical Example
+
+In the first section of this tutorial we entered the data into R manually. 
+We can also import a csv file.
+I do that here with the data that is part of this project.
 ```{r}
 learn <- read.csv("data/learn.csv", header = TRUE)
 ```
 
+This is a small data set so let's look at it:
+
 ```{r}
 print(learn, row.names = FALSE)
 ```
+It has two variables `X`, the number of hours studied, the IV, and `Y` the vector of mathematics achievement scores measured after studying.
+We want to model the effect of hours of study on math achievement.
+We expect that studying helps with math achievement, so suspect that as the IV increases we will see a increase in the DV.
+
+First, let's plot the data to see what we are dealing with.
 
 ```{r}
-# Create vectors from the data frame.
-X <- learn$X
-Y <- learn$Y
-
-N <- length(X)
-
-# Create deviation scores
-x <- X - mean(X)
-y <- Y - mean(Y)
+plot(Y ~ X, data = learn, 
+     xlab = " Hours of Studying (X)", 
+     ylab = "Math Achievment (Y)", 
+     main = "Effect of Hours of Study (IV) on Math Achievement (DV)")
 ```
 
+We do see an upward trend in math achievement as the number of hours studies increases.
+It is always important to look at ALL of your data before you start summarizing it
+Let's get some descriptive statistics:
+
+```{r}
+describe(learn, fast = TRUE)
+```
+
+To model the relation between X and Y we will use a simple linear model, that can be represented as follows:
+
+$$
+Y_i = \alpha + \beta X_i + \varepsilon_i
+$$
+See the chapter for details about this equation.
+Note that the $i$ subscript indicates components of the equation that are unique to individual, so each person in the population has a math score and a number of hours studied.
+Each individual also has a unique error ($\varepsilon_i$).
+We say that the $i$ subscript indexes individuals in the population.
+However the intercept ($\alpha$) and slope ($\beta$) are scalars, meaning single values. 
+
+The sample equation is:
+
+$$
+Y_i = a + bX_i + e_i
+$$
+
+and now the $i$ subscript indexes individuals in the sample instead of the population.
+
+Next, let's run a simple regression.
+We use the `lm()` function, with the first argument being a formula.
+In R formulas take the form of 
 ```{r}
 mod <- lm(Y ~ X, data = learn)
 display(mod)
+```
+
+
+```{r}
 learn$yhat <- predict(mod)
 
 learn$yhatDevs <- learn$yhat - mean(learn$Y)
