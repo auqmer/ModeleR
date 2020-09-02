@@ -1,0 +1,103 @@
+---
+title: "Simple Regression"
+subtitle: "Simulating an Experiment to Understand Assumptions"
+author: "William Murrah"
+date: "8/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NULL)
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+library(arm)
+```
+
+
+Here I will simulate data from a hypothetical experiment to demonstrate the assumptions of linear regression.
+
+Recall the population equation for simple regression:
+
+$$
+Y_i = \alpha + \beta X_i + \varepsilon_i 
+$$
+
+
+## Assumptions
+
+Before we simulate the data, let's summarize the assumptions of linear models (see Pedhazur, Chapter 2, or another textbook on regression for more details on these assumptions)..
+
+### No Measurement Error
+
+The independent variable is measured without error, meaning the predictor is assumed to be perfectly reliable.
+
+### Linear Relation
+
+The relation between the dependent and independent variables is assumed to be linear.
+In other words, the means of $Y$ at each level of $X$ are assumed to lie on a straight line.
+
+### Dependent Variable is a Random Variable
+
+We assume that $Y$ is a random variable, which means that it can take on a range of values, each having an associated probability.
+
+### Unbiased Errors
+
+We assume the errors have a mean of zero.
+
+### Homogeneity of Variance
+
+We assume the variance of $Y$ is constant at every level of $X$ in the population.
+
+### Errors are not correlated with the independent variable $X$
+
+We assume there is no correlation between the errors and the values of $X$.
+
+### Independent Variable is Fixed
+
+We assume (for now) that the independent variable $X$ is fixed, meaning that if the researcher were to replicate the study, the same values of $X$ would be used.
+
+```{r}
+a <- 5.05
+b <- .75
+sigma <- 2.45
+# Sample size (multiple of )
+n <- 1e5
+```
+
+```{r}
+studyHrs <- rep(0:4, each = n/5)
+
+set.seed(1234)
+mathAch <- a + b*studyHrs + rnorm(n, 0, sigma)
+```
+
+```{r}
+mod <- lm(mathAch ~ studyHrs)
+```
+
+```{r}
+plot(mathAch ~ studyHrs)
+abline(coef(mod))
+```
+
+
+```{r}
+hist(mathAch, probability = TRUE)
+curve(dnorm(x, mean(mathAch), sd(mathAch)), add = TRUE, col = "blue")
+```
+
+```{r}
+mod <- lm(mathAch ~ studyHrs)
+display(mod)
+```
+
+```{r}
+
+mns <- aggregate(resid(mod) ~ studyHrs, FUN = mean)
+plot(resid(mod) ~ predict(mod))
+abline(h = 0, col = "blue")
+```
+
+

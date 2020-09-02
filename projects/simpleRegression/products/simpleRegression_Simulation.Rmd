@@ -9,8 +9,6 @@ knitr::opts_chunk$set(echo = TRUE, comment = NULL)
 library(arm)
 ```
 
-
-
 Let's suppose we know the average height in the population of men is 69.1 with a standard deviation of 2.9, and further suppose we know the average height of women is 63.7 with a standard deviation of 2.7. 
 
 ```{r}

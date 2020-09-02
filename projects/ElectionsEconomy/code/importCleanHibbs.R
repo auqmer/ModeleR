@@ -1,7 +1,9 @@
 #************************************************************************
 # Title: importCleanHibbs.R
 # Author: William Murrah
-# Description: Prepare the Hibbs data for ElectionEconomy examples
+# Description: Prepare the Hibbs data for ElectionEconomy examples.
+#   This example is based on the data and other code from: 
+#   https://avehtari.github.io/ROS-Examples/
 # Created: Sunday, 23 August 2020
 # R version: R version 4.0.2 (2020-06-22)
 # Project(working) directory: /home/wmmurrah/Projects/QMER/ModeleR/projects/ElectionsEconomy

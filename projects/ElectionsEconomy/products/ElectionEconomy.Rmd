@@ -8,7 +8,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, comment=NULL)
 ```
 
-In this tutorial I will use the following R packages:
+In this tutorial I will use the project entitled `ElectionsEconomy` in the projects directory of the ModeleR github repository. I will use the  following R packages:
 
 ```{r, warning=FALSE, message=FALSE}
 library(car)
@@ -16,65 +16,171 @@ library(arm)
 library(psych)
 ```
 
-This example is taken from Gelman, Hill, and Vehtari (2021), which is taken from the bread and peace model by Douglas Hibbs.
+This example is taken from Gelman, Hill, and Vehtari (2021), which is taken from the bread and peace model for predicting outcomes of presidential elections in the U.S., developed by Douglas Hibbs.
 This model is based on two factors that dominate the election of U.S. presidents post World War II.
 These two factors are weighted-average growth per capita disposable income over the prior term, and the number of U.S. fatalities resulting from unprovoked deployment.
-This example will focus on the first factor.
+This example will focus on the first factor, economic growth, and how it predicts vote shares.
+
+## Importing the Data
+
+We need to import the data. Below I source a script that imports the data from the *Regression and Other Stories* website, and cleans the data (which consists of converting two variables not used in this analysis to factors). 
+The script is in the code directory associated with this project.
 
 ```{r}
 source("code/importCleanHibbs.R")
 ```
 
+Before looking at descriptive statistics which oversimplify our data, I always look at all the data to ensure those simplifications are reasonable. 
+This is often done with graphics, so I plot the two variables we will use for this model.
 
 ```{r}
 scatterHist(hibbs[2:3], xlim = c(-5, 8), ylim = c(35, 70), smooth = FALSE)
 ```
 
+Looking at the histograms, we see some bimodality in the vote variable, but there are only 16 elections in this data set, so I'm not too worried about this.
+The histograms don't suggest any extremely deviant outliers, but there is one that falls outside of the 95% uncertainty interval in the scatterplot.
+The scatterplot (and the correlation coefficient) suggest a strong positive relation between economic growth and vote shares, such that higher economic growth is associated with a higher probability of the incumbent candidate winning the popular vote.
+But the spread of the points suggest that there are other factors that may be important. 
+All of this is consistent with what we might expect, prior to looking at our data.
+Now that I have an understanding of the data, I am comfortable summarizing them.
 
 ```{r}
-describe(hibbs[2:3], fast = TRUE)
+describe(hibbs[2:3], fast = FALSE)
 ```
 
+We see that the average vote shares in our data is 52%, suggesting that incumbent candidates tend to win elections. 
+We also see that economic growth tends to be positive, but comparing the mean growth the standard deviation suggests that there is a good deal of variability in the economic growth from election to election.
+
+Next, I include a publication quality table found in Gelman, Hill, and Vehtari (2021). 
+It is based on the data we saw in the scatterplot above, however, the variables on the y and x-axes have been switch to be able to label the elections with the incumbent vs the opponent.
+This is an excellent example of using both tabular and graphical information together to emphasize the major comparisons made in an analysis. 
+It also demonstrated the power and flexibility of graphics in R (base R grahics, no less!). 
+The code can be found on the book's website and is also replicated in the code for this project.
 
 ```{r}
 source("code/breadPeaceModelPlot.R")
 ```
 
+This graphic makes clear the positive association we saw earlier, and also includes a vertical line indicating the 50% point for vote percentage, as this marks the decision point for who wins the popular vote.
+We also see our outlier from before is the Stevenson vs. Eisenhower election in 1952.
+Notice how the plot breaks income growth into categories, while still plotting the continuous data which will be analyzed.
+I also like how the labels are organized in the plot to make comparisons easy.
+
+## Simple Regression
+
+Before we create a predictive model of vote shares from economic growth, let's just model the distribution of vote shares.
+This empty model will serve as our baseline model, as it has no predictors.
+We estimate this model by regressing vote shares on a constant:
+
+```{r}
+mod0 <- lm(vote ~ 1, data = hibbs)
+display(mod0)
+```
+
+Comparison of the output demonstrates that the intercept, it's standard error, and the residual standard deviation map onto the mean, standard error, and standard deviation of vote shares in our descriptive statistics table above.
+
+Below I graph the scatterplot of vote shares (y-axis) against economic growth (x-axis) and plot a horizontal line at the mean of vote shares. 
+I then plot the deviation scores from the mean value to the observed values for the outcome. 
+I also plot the predicted vote shares for each election which are all the mean value (you can see this for yourself by typing `predict(mod0)` into R after running the above code). 
+Note that while I plot growth on the x-axis, this variable is not used to calculate any of the values in this plot.
+I only use them so this plot is comparable to the next one.
+
+```{r}
+a <- coef(mod0)
+plot(vote ~ growth, hibbs, main = "Empty Model")
+
+abline(h = coef(mod0), col = "red", lty = 20)
+points(x = hibbs$growth, y = predict(mod0), col = "red")
+text(x = 0, y = a+1, bquote(bar(Y) == .(a)), col = "red")
+segments(x0 = hibbs$growth, x1 = hibbs$growth, 
+         y0 = hibbs$vote,  y1 = predict(mod0), col = "orange")
+```
+
+Now, let's run the simple regression of vote shares on economic growth.
 
 ```{r}
 mod <- lm(vote ~ growth, data = hibbs)
 display(mod)
 ```
 
+This model suggests that if there is no economic growth, the incumbent candidate will get about 46% of the vote on average, and that for every percentage point increase in growth, the model would predict an average increase of vote share of about 3%.
+
+Now I plot this model with the data (black circles), regression line (black line), predicted scores (red circles), and  model residuals (blue lines).
+```{r}
+plot(vote ~ growth, hibbs, main = "Simple Regression Model")
+a <- round(coef(mod)[1],1)
+b <- round(coef(mod)[2],1)
+simga <- summary(mod)$sigma
+abline(coef(mod))
+points(x = hibbs$growth, y = predict(mod), col = "red")
+segments(x0 = hibbs$growth, x1 = hibbs$growth,
+         y0 = hibbs$vote, y1 = predict(mod), col = "blue")
+text(x = 1, y = 60, bquote(Y[i] == .(a) + .(b)*X[i] + epsilon[i]))
+text(x = 1, y = 57, bquote(Y[i] == .(a) + .(b)*X[i]), col = "red")
+```
+If we take the length of each of the blue lines, square them, then sum them, we have the sum of the squared errors. 
+
+## Partitioning the Sum of Squares
+
+```{r}
+plot(vote ~ growth, data = hibbs, main = "Visualizing Deviations due to Regression (SSReg)")
+abline(h = coef(mod0), col = "red", lty = 20)
+abline(coef(mod))
+segments(x0 = hibbs$growth, x1 = hibbs$growth,
+         y0 = mean(hibbs$vote), y1 = predict(mod), col = "green")
+```
+
+
+```{r}
+Yhat <- predict(mod)
+Y <- hibbs$vote
+Ybar <- mean(Y)
+# Sum of squared errors (squaring and summing blue lines)
+SSE <- sum(resid(mod)^2)       
+# Regression sum of square (squaring and summing the green lines)
+SSReg <- sum((Yhat - Ybar)^2)  
+# Total sum of squares (squaring and summing the yellow lines)
+SST <- SSReg + SSE             
+```
 
 ```{r}
 # simulate model ----------------------------------------------------------
 simHibbs <- function(model) {
-  a <- coef(model)[1]
-  b <- coef(model)[2]
-  x <- model$model[[2]]
-  n <- length(x)
-  sigma <- summary(mod)$sigma
-  simvote <- a + b*x + rnorm(n, 0, sigma)
-  simmod <- lm(simvote ~ x)
-  return(c(a = coef(simmod)[1], b = coef(simmod)[2], sigma = summary(simmod)$sigma))
-  }
+  a <- coef(model)[1] # intercept
+  b <- coef(model)[2] # slope
+  x <- model$model[[2]] # economic growth
+  n <- length(x) # sample size
+  sigma <- summary(mod)$sigma # residual sd
+  simvote <- a + b*x + rnorm(n, 0, sigma) # simulate outcome
+  simmod <- lm(simvote ~ x) # Model simulated data
+  return(c(a = coef(simmod)[1], b = coef(simmod)[2], 
+           sigma = summary(simmod)$sigma)) # return simulated a, b, sigma
+}
 
-sims <- replicate(10000, simHibbs(mod))
-sims <- t(sims)
-head(sim)
+set.seed(1234) # for reproducibility
+sims <- replicate(10000, simHibbs(mod)) # simulate  model 10,000 times
+sims <- t(sims) # transpose simulations (invert rows and columns)
+head(sims) # show first few rows of simulated coefficients
 ```
 
 
+
+## Simulating the uncertainty in the model parameters
+
+Finally, I simulate the the model and plot the simulated regression lines to get an estimate of the uncertainty in the model. 
+I don't explain the code here, but include the code so others can play around with it.
+ 
 ```{r}
+# plot the graph, but without the points (type = "n")
 plot(vote ~ growth, data = hibbs, xlim = c(-2, 6), ylim = c(40, 70), type = "n")
-#idx <- sample(1:nrow(sims), 100)
+# Loop over the rows of simulated coefficients and plot a line for each
 for(i in 1:nrow(sims)) {
   abline(a = sims[i, 1], b = sims[i, 2], col = "grey")
 }
+# Add the points on top of the lines so you can see them
 points(x = hibbs$growth, y = hibbs$vote)
+# Plot the original regression line
 abline(coef(mod), col = "black")
+ # Plot a horizontal line at the 50% mark
 abline(h = 50, lty = 2, col = "darkblue")
 ```
-
-

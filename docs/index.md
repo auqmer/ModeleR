@@ -28,4 +28,7 @@ Introduction to Modeling and Model Comparison
     + [Tutorial](https://auqmer.github.io/ModeleR/simpleRegression_Conceptual.html)
     + [Video](https://auburn.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=0fc0548b-4816-4405-a4e1-ac21012e3408)
 
+* Simple Regression - Elections and Economy
+  + [Tutorial](https://auqmer.github.io/ModeleR/ElectionEconomy.html)
+
 ### Generalized Linear Models
