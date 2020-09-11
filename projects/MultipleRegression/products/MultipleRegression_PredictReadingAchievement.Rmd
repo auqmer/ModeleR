@@ -9,6 +9,12 @@ opts_chunk$set(echo = TRUE, comment=NULL)
 
 ```
 
+
+```{r, warning=FALSE, message=FALSE}
+library(arm)
+library(texreg)
+```
+
 After building an intuitive understanding of simple regression we will now expand our model to include more than one predictor. 
 But keep this as simple as possible, I will focus mostly on models with two predictors.
 
@@ -30,7 +36,7 @@ $$
 This is done, as in equation 2, by adding numeric subscripts to the slope coefficients, and to the predictors.
 Note that equation 2 is generic and can accommodate any number of predictors ($k$). 
 
-## Simulating Reading Achievement Model
+## Reading Achievement Model
 
 In this post I will build on what we covered related to simple regression by introducing multiple regression. 
 In this post I will use simulated data to model the use of verbal aptitude and achievement motivation to predict reading achievement.
@@ -92,7 +98,39 @@ text(100, 90, "Y")
 text(82, 38, expression('X'[1]))
 text(118, 38, expression('X'[2]))
 ```
+```{r}
+n <- 10000
+set.seed(1234)
+x1 <- rnorm(n)
+x2 <- rnorm(n)
+y <- .5*x1 + .5*x2 + rnorm(n)
+```
 
+```{r, results='asis'}
+cor(cbind(x1, x2, y))
+mody.1 <- lm(y ~ x1)
+mody.2 <- lm(y ~ x2)
+mody.2 <- lm(y ~ x1 + x2)
+htmlreg(list(mody.1, mody.2, mody.2),
+        custom.model.names = c("y ~ x1", "y ~ x2", "y ~ x1 + x2") )
+```
+
+```{r}
+n <- 10000
+set.seed(1234)
+x1 <- rnorm(n)
+x2 <- .5*x1 + rnorm(n)
+y <- .5*x1 + .5*x2 + rnorm(n)
+```
+
+```{r, results = 'asis'}
+cor(cbind(x1, x2, y))
+mody.1 <- lm(y ~ x1)
+mody.2 <- lm(y ~ x2)
+mody.2 <- lm(y ~ x1 + x2)
+htmlreg(list(mody.1, mody.2, mody.2), 
+        custom.model.names = c("y ~ x1", "y ~ x2", "y ~ x1 + x2"))
+```
 
 ### Simple Regression: Using Verbal Aptitude to Predict Reading Achievement
 

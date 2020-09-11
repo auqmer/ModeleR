@@ -1,29 +1,80 @@
 ---
 title: "Simple Regression"
-subtitle: "Mother Daughter Heights"
+subtitle: "Mother Height as a Predictor of Dauther Height"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, comment = NULL)
 ```
 
-
-
+```{r, message=FALSE, warning=FALSE}
+library(psych)
+library(arm)
+library(car)
+```
 
 ```{r}
 heights <- read.csv("data/heights.csv", header = TRUE)
+heights$X <- NULL
 ```
 
 ```{r}
-describe(heights)
+# data(Galton, package = "mosaicData")
+# 
+# heights <- Galton[Galton$sex == "F", c(3,5)]
+# names(heights) <- c("mother_height", "daughter_height")
+```
+
+```{r}
+par(mfrow = c(1,2)) # Make two plots per row
+hist(heights$daughter_height, col = "red", probability = TRUE, 
+     ylim = c(0, .2), main = NULL, xlab = "Daughter's Height (in.)")
+curve(dnorm(x, mean = mean(heights$daughter_height), 
+            sd = sd(heights$daughter_height)), add = TRUE,
+      lwd = 2, col = "blue")
+hist(heights$mother_height, col = "blue", probability = TRUE, 
+     ylim = c(0, .2), main = NULL, xlab = "Mother's Height (in.)")
+curve(dnorm(x, mean = mean(heights$mother_height), 
+            sd = sd(heights$mother_height)),
+            lwd = 2, col = "red", add = TRUE)
+par(mfrow = c(1,1)) # Go back to one plot per row
+```
+
+```{r}
+plot(daughter_height ~ mother_height, heights)
+```
+```{r}
+scatterHist(heights)
 ```
 
 
 ```{r}
-mod <- lm(daughter_height ~ I(mother_height - mean(mother_height)), heights)
+describe(heights, fast = TRUE)
+```
+
+
+```{r}
+mod <- lm(daughter_height ~ mother_height, heights)
 display(mod)
 ```
+
+
+```{r}
+plot(daughter_height ~ mother_height, heights)
+abline(coef(mod))
+```
+
+
+```{r}
+plot(resid(mod) ~ predict(mod))
+abline(h = 0, col = "red")
+```
+
+```{r}
+coef(mod)
+```
+
 
 For example, suppose we knew the average height of adult women in the United States is 64 inches, with a variance of 9 inches.
 As we will see below, the standard deviation is the square root of the variance, so the standard deviation for the height of adult women is $\sqrt{9} = 3$.
