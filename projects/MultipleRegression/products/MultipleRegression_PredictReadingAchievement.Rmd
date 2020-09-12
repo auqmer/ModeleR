@@ -1,5 +1,6 @@
 ---
-title: "Multiple Regression - Predicting Reading Achievement"
+title: "Multiple Regression"
+subtitle: "Predicting Reading Achievement"
 output: html_document
 ---
 
@@ -39,17 +40,17 @@ Note that equation 2 is generic and can accommodate any number of predictors ($k
 ## Reading Achievement Model
 
 In this post I will build on what we covered related to simple regression by introducing multiple regression. 
-In this post I will use simulated data to model the use of verbal aptitude and achievement motivation to predict reading achievement.
-I will use the descriptive statistics from an example in Pedhazur 1998, chapter 5, Table 5.1 as the population parameters.
+In this post I will use data from Pedhazur (1997), chapter 5, table 1 to model the use of verbal aptitude and achievement motivation to predict reading achievement.
 
 
+I will use the following packages in this tutorial:
 ```{r, warning=FALSE, message=FALSE}
 library(psych)
 library(arm)
 library(texreg)
 ```
 
-
+Below is R code to create a data frame from the data in the book.
 ```{r}
 dat51 <- data.frame(
   readAch  = c(2, 4, 4, 1, 5, 4, 7, 9, 7, 8, 5, 2, 8, 6, 10, 9, 3, 6, 7, 10),
