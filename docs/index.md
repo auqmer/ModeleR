@@ -30,5 +30,11 @@ Introduction to Modeling and Model Comparison
 
 * Simple Regression - Elections and Economy
   + [Tutorial](https://auqmer.github.io/ModeleR/ElectionEconomy.html)
+  
+### Multiple Regression
+
+* Multiple Regression - Pedhazur Chapter 5
+   + [Tutorial](https://auqmer.github.io/ModeleR/MultipleRegression_PredictReadingAchievement.html)
+   + [Video] Coming Soon!
 
 ### Generalized Linear Models

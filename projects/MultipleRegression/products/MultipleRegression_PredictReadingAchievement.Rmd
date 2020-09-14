@@ -10,8 +10,11 @@ opts_chunk$set(echo = TRUE, comment=NULL)
 
 ```
 
-
+### [Link to ModeleR Home](https://auqmer.github.io/ModeleR/)
+I will use the following packages in this tutorial:
 ```{r, warning=FALSE, message=FALSE}
+library(psych)
+library(car)
 library(arm)
 library(texreg)
 ```
@@ -37,51 +40,29 @@ $$
 This is done, as in equation 2, by adding numeric subscripts to the slope coefficients, and to the predictors.
 Note that equation 2 is generic and can accommodate any number of predictors ($k$). 
 
-## Reading Achievement Model
+## Importance of the relation between predictors
 
-In this post I will build on what we covered related to simple regression by introducing multiple regression. 
-In this post I will use data from Pedhazur (1997), chapter 5, table 1 to model the use of verbal aptitude and achievement motivation to predict reading achievement.
+Recall from simple regression that the squared correlation between the predictor and outcome, $r^2$, is the proportion of the variance in the outcome accounted for by the predictor, and that $1-r^2$, is the proportion of variance in the outcome not accounted for by the predictor.
+With more than one predictor is used we will calculate the **squared multiple correlation** = $R^2$.
+For two predictors, $X_1$ and $X_2$ predicting $Y$, we might write this as $$R^2_{y.12}$$, where, following Pedhazur (1997), I drop the $X$'s to make the notation more compact. 
+Similarly, the correlation between $X_1$ and $X_2$ is represented as $r_{12}$, and the squared correlation between these two predictors is $r^2_{12}$
 
+What is meant by squared multiple correlation above? It is similar to the squared correlation in simple regression, but instead of being the proportion of variance in the outcome accounted for by the predictor, it is the proportion of variance in the outcome accounted for by the model as a whole, or the proportion of variance accounted for by all the predictors together. 
+If all the predictors are independent (i.e. uncorrelated) then the squared multiple correlation, also simply called the $R^2$ (R squared), is the sum of the squared correlations between each of the predictors and the outcome:
 
-I will use the following packages in this tutorial:
-```{r, warning=FALSE, message=FALSE}
-library(psych)
-library(arm)
-library(texreg)
-```
+$$
+R^2_{y.12} = r^2_{y1} + r^2_{y2} \quad (\text{when } r_{12} = 0)
+$$
+See the left diagram in Figure 5.1 below.
+Note there is no overlap between $X_1$ and $X_2$ in that diagram, suggesting the two predictors are uncorrelated, but both are related to the outcome $Y$.
+The overlap between each predictor and $Y$ represents the variance in the outcome accounted for the that predictor.
 
-Below is R code to create a data frame from the data in the book.
-```{r}
-dat51 <- data.frame(
-  readAch  = c(2, 4, 4, 1, 5, 4, 7, 9, 7, 8, 5, 2, 8, 6, 10, 9, 3, 6, 7, 10),
-  verbalApt = c(1, 2, 1, 1, 3, 4, 5, 5, 7, 6, 4, 3, 6, 6, 8, 9, 2, 6, 4, 4),
-  achMot = c(3, 5, 3, 4, 6, 5, 6, 7, 8, 4, 3, 4, 6, 7, 7, 6, 6, 5, 6, 9)
-)
+When the two predictors are not independent (i.e. they are correlated) the equation above does not hold, because there is redundant information, provided by the two predictors.
+This is depicted in the right diagram in Figure 5.1.
+Note that a portion of the variance in $Y$ accounted for by the two predictors overlaps both $X_1$ and $X_2$.
+We have to remove the part of the $Y$ circle that is covered by both predictors, because it is counted twice, once in each of the sections overlapping each predictor and the outcome.
 
-```
-
-```{r}
-pairs(dat51)
-```
-
-```{r}
-hist(dat51$readAch, main = "Reading Achievement")
-```
-
-```{r}
-hist(dat51$verbalApt)
-```
-
-```{r}
-hist(dat51$achMot)
-```
-
-
-```{r}
-describe(dat51, fast = TRUE)
-```
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, eval=TRUE, fig.cap="Figure 5.1"}
 library(plotrix)
 plot(1:130, 1:130, type = "n", xlab = "",ylab = "", xaxt ="n",
      yaxt= "n", bty = "n") 
@@ -99,6 +80,10 @@ text(100, 90, "Y")
 text(82, 38, expression('X'[1]))
 text(118, 38, expression('X'[2]))
 ```
+
+I will simulate both scenarios to demonstrate this.
+First, I will simulate the situation where the two predictors are not correlated:
+
 ```{r}
 n <- 10000
 set.seed(1234)
@@ -107,15 +92,21 @@ x2 <- rnorm(n)
 y <- .5*x1 + .5*x2 + rnorm(n)
 ```
 
+Then I will run two simple regressions and one multiple regressions. Here we will focus on the $R^2$ values. 
+Recall that the $R^2$ values for the simple regression are equivalent to the squared correlation between the single predictor and the outcome.
 ```{r, results='asis'}
 cor(cbind(x1, x2, y))
 mody.1 <- lm(y ~ x1)
 mody.2 <- lm(y ~ x2)
-mody.2 <- lm(y ~ x1 + x2)
-htmlreg(list(mody.1, mody.2, mody.2),
-        custom.model.names = c("y ~ x1", "y ~ x2", "y ~ x1 + x2") )
+mody.12 <- lm(y ~ x1 + x2)
+htmlreg(list(mody.1, mody.2, mody.12),
+        custom.model.names = c("y ~ x1", "y ~ x2", "y ~ x1 + x2"),
+        caption = "Table 1: Uncorrelated Predictors")
 ```
 
+The Multiple $R^2$ in the third column, $R^2 = .33$ is equal to the sum of the $R^2$ values of the simple regressions $.33 - .16 + .17$.
+
+Next, I simulate data where the predictors are correlated.
 ```{r}
 n <- 10000
 set.seed(1234)
@@ -124,36 +115,120 @@ x2 <- .5*x1 + rnorm(n)
 y <- .5*x1 + .5*x2 + rnorm(n)
 ```
 
+Then, I run the same models as above.
 ```{r, results = 'asis'}
 cor(cbind(x1, x2, y))
 mody.1 <- lm(y ~ x1)
 mody.2 <- lm(y ~ x2)
-mody.2 <- lm(y ~ x1 + x2)
-htmlreg(list(mody.1, mody.2, mody.2), 
-        custom.model.names = c("y ~ x1", "y ~ x2", "y ~ x1 + x2"))
+mody.12 <- lm(y ~ x1 + x2)
+htmlreg(list(mody.1, mody.2, mody.12), 
+        custom.model.names = c("y ~ x1", "y ~ x2", "y ~ x1 + x2"),
+        caption = "Table 2: Correlated Predictors")
 ```
+
+Here it is clear that the multiple R squard in the third column is NOT the sum of the squared correlations of the other two models $.44 \ne .30 + .34$.
+
+We will keep these insights in mind as we work through an example of multiple regression.
+
+## Reading Achievement Model
+
+Next, I will build on what we covered related to simple regression by introducing multiple regression with an example. 
+I will use data from Pedhazur (1997), chapter 5, table 1 to model the use of verbal aptitude and achievement motivation to predict reading achievement.
+
+
+Below is R code to create a data frame from the data in the book.
+```{r}
+dat51 <- data.frame(
+  readAch  = c(2, 4, 4, 1, 5, 4, 7, 9, 7, 8, 5, 2, 8, 6, 10, 9, 3, 6, 7, 10),
+  verbalApt = c(1, 2, 1, 1, 3, 4, 5, 5, 7, 6, 4, 3, 6, 6, 8, 9, 2, 6, 4, 4),
+  achMot = c(3, 5, 3, 4, 6, 5, 6, 7, 8, 4, 3, 4, 6, 7, 7, 6, 6, 5, 6, 9)
+)
+
+```
+
+Let's look at the data.
+We can look at the distribution of each variable.
+
+```{r}
+hist(dat51$readAch, main = "Reading Achievement")
+```
+
+```{r}
+hist(dat51$verbalApt, main = "Verbal Aptitude")
+```
+
+```{r}
+hist(dat51$achMot, main = "Achievement Motivation")
+```
+
+This is a very small data set, so not much going on here, but we do not see any major values falling far away from the others.
+
+Next, let's look at the relation between the variables.
+```{r}
+pairs(dat51)
+```
+We see a stronger relation between reading achievement and verbal aptitude than between reading achievement and achievement motivation, as evidenced by the tighter pattern of points around an imagined straight line describing the linear correlation between variables.
+We also see a positive relation between our two predictors, students with higher verbal aptitude tend to also have higher achievement motivation.
+
+We can estimate the linear relation between the three variables,
+
+```{r}
+round(cor(dat51),2)
+```
+
+Now that we have looked at all the data, we can feel better about looking at descriptive statistics.
+```{r}
+describe(dat51, fast = TRUE)
+```
+
+We see that all three variables are on similar scales, with range from 1 (or very close) to about 10, and the standard deviations are also very similar.
+This is useful to know when interpreting models.
 
 ### Simple Regression: Using Verbal Aptitude to Predict Reading Achievement
 
+I will, again conduct two simple regressions before the multiple regression.
+First, we look at how well verbal aptitude predicts reading achievement.
 ```{r}
 mody.1 <- lm(readAch ~ verbalApt, data = dat51)
 display(mody.1)
 ```
 
+We see that, according to this simple model, people who differ by one point in verbal aptitude would be predicted to differ a little less than one point ($b = .93$) on reading achievement on average, in the same direction.
+
 ### Simple Regression: Using Achievement Motivation to Predict Reading Achievement
+
+Next we look at the relation between achievement motivation and reading achievement.
+
 ```{r}
 mody.2 <- lm(readAch ~ achMot, data = dat51)
 display(mody.2)
 ```
 
+This model suggests that two people that differ in achievement motivation by one point would be predicted to differ by a little over 1 point ($b = 1.10$) in reading achievement. 
+
+So, the two predictors have similar relations to the outcome. 
+
 ### Multiple Regression: Using Verbal Aptitude and Achievement Motivation to Predict Reading Achievement
+
+But we also know that verbal aptitude and achievement motivation are correlated.
+We might want to know what the relation between verbal aptitude and reading achievement would be if we compare two people with the same level of achievement motivation.
+Or, we might want to know what is the relation between achievement motivation and reading achievement for two people with the same verbal aptitude.
+We can estimate those effects with multiple regression. 
+
+All we need to do to run a multiple regression in R is add the additional predictors to the right side of the equation.
+
 ```{r}
 mody.12 <- lm(readAch ~ verbalApt + achMot, data = dat51)
 display(mody.12)
 ```
 
+I put all three models into Table 3, in a format that is common in the literature.
+Notice the slope coefficients are different for the multiple regression  model compared to the two simple regression models.  
+That's because they are answering different questions. 
+The coefficient for verbal aptitude in Model 1 of Table 3 answers the questions "what is the relation between verbal aptitude and reading achievement ignoring any other differences between individuals?", while the verbal aptitude coefficient in the third model answers the questions "what is the relation between verbal aptitude and reading achievement for individuals with the same value on achievement motivation?"
+The respective achievement motivation coefficients have a similar interpretation.
 
 ```{r, results = 'asis'}
-htmlreg(list(mody.1, mody.2, mody.12))
+htmlreg(list(mody.1, mody.2, mody.12), caption = "Table 3: Predicting Reading Achievement")
 ```
 
