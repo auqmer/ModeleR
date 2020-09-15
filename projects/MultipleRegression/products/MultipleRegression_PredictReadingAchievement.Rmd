@@ -94,8 +94,13 @@ y <- .5*x1 + .5*x2 + rnorm(n)
 
 Then I will run two simple regressions and one multiple regressions. Here we will focus on the $R^2$ values. 
 Recall that the $R^2$ values for the simple regression are equivalent to the squared correlation between the single predictor and the outcome.
+
+```{r}
+round(cor(cbind(x1, x2, y)),2)
+```
+
 ```{r, results='asis'}
-cor(cbind(x1, x2, y))
+
 mody.1 <- lm(y ~ x1)
 mody.2 <- lm(y ~ x2)
 mody.12 <- lm(y ~ x1 + x2)
@@ -116,8 +121,12 @@ y <- .5*x1 + .5*x2 + rnorm(n)
 ```
 
 Then, I run the same models as above.
-```{r, results = 'asis'}
+
+```{r}
 cor(cbind(x1, x2, y))
+```
+
+```{r, results = 'asis'}
 mody.1 <- lm(y ~ x1)
 mody.2 <- lm(y ~ x2)
 mody.12 <- lm(y ~ x1 + x2)

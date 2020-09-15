@@ -405,9 +405,11 @@ x1 &lt;- rnorm(n)
 x2 &lt;- rnorm(n)
 y &lt;- .5*x1 + .5*x2 + rnorm(n)</code></pre>
 <p>Then I will run two simple regressions and one multiple regressions. Here we will focus on the <span class="math inline">\(R^2\)</span> values. Recall that the <span class="math inline">\(R^2\)</span> values for the simple regression are equivalent to the squared correlation between the single predictor and the outcome.</p>
-<pre class="r"><code>cor(cbind(x1, x2, y))</code></pre>
-<pre><code>       x1         x2         y</code></pre>
-<p>x1 1.00000000 0.01075281 0.3975730 x2 0.01075281 1.00000000 0.4162113 y 0.39757299 0.41621129 1.0000000</p>
+<pre class="r"><code>round(cor(cbind(x1, x2, y)),2)</code></pre>
+<pre><code>     x1   x2    y
+x1 1.00 0.01 0.40
+x2 0.01 1.00 0.42
+y  0.40 0.42 1.00</code></pre>
 <pre class="r"><code>mody.1 &lt;- lm(y ~ x1)
 mody.2 &lt;- lm(y ~ x2)
 mody.12 &lt;- lm(y ~ x1 + x2)
@@ -579,8 +581,10 @@ x2 &lt;- .5*x1 + rnorm(n)
 y &lt;- .5*x1 + .5*x2 + rnorm(n)</code></pre>
 <p>Then, I run the same models as above.</p>
 <pre class="r"><code>cor(cbind(x1, x2, y))</code></pre>
-<pre><code>      x1        x2         y</code></pre>
-<p>x1 1.0000000 0.4483634 0.5474017 x2 0.4483634 1.0000000 0.5812799 y 0.5474017 0.5812799 1.0000000</p>
+<pre><code>          x1        x2         y
+x1 1.0000000 0.4483634 0.5474017
+x2 0.4483634 1.0000000 0.5812799
+y  0.5474017 0.5812799 1.0000000</code></pre>
 <pre class="r"><code>mody.1 &lt;- lm(y ~ x1)
 mody.2 &lt;- lm(y ~ x2)
 mody.12 &lt;- lm(y ~ x1 + x2)
