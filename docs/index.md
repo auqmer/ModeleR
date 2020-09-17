@@ -35,6 +35,6 @@ Introduction to Modeling and Model Comparison
 
 * Multiple Regression - Pedhazur Chapter 5
    + [Tutorial](https://auqmer.github.io/ModeleR/MultipleRegression_PredictReadingAchievement.html)
-   + [Video] Coming Soon!
+   + [Video](https://auburn.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=e4e6d4a9-ded7-4e7e-bd7e-ac390133bd6a)
 
 ### Generalized Linear Models
